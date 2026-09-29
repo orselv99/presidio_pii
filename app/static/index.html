@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Microsoft Presidio Technical PII Platform</title>
+  <meta name="description" content="엔터프라이즈 개인정보 비식별화 및 복원 시스템 (Swiss Technical Editorial Rationalism)">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- Technical App Header -->
+  <header class="app-header">
+    <div class="logo-group">
+      <div class="logo-badge">P//</div>
+      <div>
+        <h1 class="logo-title">Presidio Privacy Guard</h1>
+        <div class="logo-sub">SYS_ENGINE // ENTERPRISE PII REDACTION & DE-IDENTIFICATION</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="status-indicator">
+        <span class="status-dot"></span>
+        <span>KR_PREDEFINED // ACTIVE</span>
+      </div>
+      <button id="theme-toggle-btn" class="btn-outline" style="padding: 0.35rem 0.75rem; font-size: 11px;">
+        <span id="theme-label">MODE: DARK</span>
+      </button>
+      <a href="/docs" target="_blank" class="btn-outline">SWAGGER_DOCS</a>
+      <a href="/redoc" target="_blank" class="btn-outline">REDOC</a>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs (Hairline Grid) -->
+  <div class="nav-tabs-container">
+    <nav class="nav-tabs">
+      <button class="tab-btn active" data-tab="tab-analyzer">
+        <span>[01]</span> ANALYZER (한국 PII 탐지)
+      </button>
+      <button class="tab-btn" data-tab="tab-anonymizer">
+        <span>[02]</span> ANONYMIZER & DEANONYMIZER
+      </button>
+      <button class="tab-btn" data-tab="tab-image">
+        <span>[03]</span> IMAGE & DICOM REDACTOR
+      </button>
+      <button class="tab-btn" data-tab="tab-structured">
+        <span>[04]</span> STRUCTURED TABULAR
+      </button>
+      <button class="tab-btn" data-tab="tab-testdata">
+        <span>[05]</span> TEST DATA HUB
+      </button>
+    </nav>
+  </div>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+
+    <!-- TAB 1: Presidio Analyzer -->
+    <section id="tab-analyzer" class="tab-panel active">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">INPUT_STREAM // RAW_TEXT_ANALYSIS</h2>
+            <span class="badge badge-spec">NLP: KO + EN</span>
+          </div>
+          <div class="card-body">
+            <div class="sample-bar">
+              <span class="form-label" style="margin-right: 0.25rem;">LOAD_SAMPLE:</span>
+              <button class="sample-btn analyzer-sample-btn" data-scenario="customer_inquiry">고객 상담 (주민번호/연락처)</button>
+              <button class="sample-btn analyzer-sample-btn" data-scenario="hr_employee">인사 급여 (다수 주민번호)</button>
+              <button class="sample-btn analyzer-sample-btn" data-scenario="medical_consult">병원 진료의뢰서</button>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="analyzer-input">INPUT_TEXT // UTF-8 BODY:</label>
+              <textarea id="analyzer-input" class="input-field" placeholder="분석할 텍스트를 입력하거나 위의 테스트 샘플 버튼을 누르세요.">홍길동 고객님의 주민번호는 900101-1234568 이며 휴대폰 연락처는 010-1234-5678, 유선전화는 02-555-4321, 이메일은 hong@example.com 입니다.</textarea>
+            </div>
+
+            <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+              <span class="entity-pill">KR_RRN (공식 주민번호)</span>
+              <span class="entity-pill">KR_BRN (공식 사업자번호)</span>
+              <span class="entity-pill">KR_PHONE_NUMBER (한국 전화번호)</span>
+              <span class="entity-pill">EMAIL_ADDRESS</span>
+              <span class="entity-pill">PERSON</span>
+            </div>
+
+            <button id="analyzer-submit-btn" class="btn-primary">
+              <span class="spinner" id="analyzer-spinner"></span>
+              <span>EXEC_ANALYSIS // 탐지 실행</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">OUTPUT_MATRIX // DETECTION_RESULTS</h2>
+            <span id="analyzer-entity-count" class="badge">0 DETECTED</span>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">HIGHLIGHTED_PII_VIEW:</label>
+              <div id="analyzer-highlighted-text" class="result-box">
+                분석 버튼을 누르면 탐지된 주민번호, 전화번호, 이메일 등이 하이라이트됩니다.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">TELEMETRY // ENTITY_METADATA_JSON:</label>
+              <pre id="analyzer-json-viewer" class="json-viewer">// JSON 분석 결과 출력 영역</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: Presidio Anonymizer & Deanonymizer -->
+    <section id="tab-anonymizer" class="tab-panel">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">CONFIG_PIPELINE // 5_OPERATORS</h2>
+            <span class="badge badge-spec">REVERSIBLE AES PIPELINE</span>
+          </div>
+          <div class="card-body">
+            <div class="sample-bar">
+              <span class="form-label" style="margin-right: 0.25rem;">LOAD_SAMPLE:</span>
+              <button class="sample-btn anon-sample-btn" data-scenario="customer_inquiry">고객 상담</button>
+              <button class="sample-btn anon-sample-btn" data-scenario="hr_employee">인사 급여</button>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="anon-input">SOURCE_PAYLOAD // TEXT:</label>
+              <textarea id="anon-input" class="input-field">홍길동 고객님의 주민번호는 900101-1234568 이며 휴대폰은 010-1234-5678, 이메일은 hong@example.com 입니다.</textarea>
+            </div>
+
+            <!-- Operator Configuration Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div class="form-group">
+                <label class="form-label">주민등록번호 (KR_RRN):</label>
+                <select id="op-rrn" class="input-field">
+                  <option value="encrypt" selected>대칭키 암호화 (AES-128/256)</option>
+                  <option value="mask">마스킹 (뒤 7자리 * 마스킹)</option>
+                  <option value="replace">대체 (&lt;KR_RRN&gt;)</option>
+                  <option value="hash">해싱 (SHA256)</option>
+                  <option value="redact">삭제 (공백 제거)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">전화번호 (KR_PHONE_NUMBER):</label>
+                <select id="op-phone" class="input-field">
+                  <option value="mask" selected>마스킹 (뒤 4자리 * 마스킹)</option>
+                  <option value="encrypt">대칭키 암호화 (AES)</option>
+                  <option value="replace">대체 (&lt;PHONE_NUMBER&gt;)</option>
+                  <option value="hash">해싱 (SHA256)</option>
+                  <option value="redact">삭제 (공백 제거)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">이메일 (EMAIL_ADDRESS):</label>
+                <select id="op-email" class="input-field">
+                  <option value="mask" selected>마스킹 (앞 5자리 * 마스킹)</option>
+                  <option value="encrypt">대칭키 암호화 (AES)</option>
+                  <option value="replace">대체 (&lt;EMAIL&gt;)</option>
+                  <option value="hash">해싱 (SHA256)</option>
+                  <option value="redact">삭제 (공백 제거)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">성명 (PERSON):</label>
+                <select id="op-person" class="input-field">
+                  <option value="replace" selected>대체 (&lt;고객명&gt;)</option>
+                  <option value="mask">마스킹 (* 마스킹)</option>
+                  <option value="encrypt">대칭키 암호화 (AES)</option>
+                  <option value="hash">해싱 (SHA256)</option>
+                  <option value="redact">삭제 (공백 제거)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="anon-aes-key">SYMMETRIC_KEY // AES (16/24/32 BYTES):</label>
+              <input type="text" id="anon-aes-key" class="input-field" value="1234567890123456" placeholder="16, 24, 32자 암호화 대칭키">
+            </div>
+
+            <button id="anon-submit-btn" class="btn-primary">
+              <span class="spinner" id="anon-spinner"></span>
+              <span>EXEC_ANONYMIZE // 비식별화 실행</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">OUTPUT_TRANSFORM // RESTORATION</h2>
+            <span class="badge">SEC_STATE // VERIFIED</span>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">ANONYMIZED_OUTPUT:</label>
+              <div id="anon-output-text" class="result-box" style="white-space: pre-wrap;">
+                비식별화 버튼을 누르면 암호화/마스킹/대체된 텍스트가 표시됩니다.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">TRANSFORMATION_MAPPING_MATRIX:</label>
+              <div class="data-table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>ENTITY_TYPE</th>
+                      <th>OPERATOR</th>
+                      <th>ORIGINAL_SNIPPET</th>
+                      <th>ANONYMIZED_SNIPPET</th>
+                    </tr>
+                  </thead>
+                  <tbody id="anon-items-tbody">
+                    <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">대기 중: 비식별화 내역 없음</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Deanonymizer Inset Card -->
+            <div id="deanon-card" class="card" style="background-color: var(--surface-subtle); border: 1px solid var(--border-strong); display: none;">
+              <div class="card-header">
+                <h3 class="card-title">DEANONYMIZER // AES_RESTORATION</h3>
+                <span class="badge badge-spec">DECRYPT</span>
+              </div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label class="form-label" for="deanon-key-input">AES_DECRYPT_KEY:</label>
+                  <input type="text" id="deanon-key-input" class="input-field" value="1234567890123456">
+                </div>
+                <button id="deanon-submit-btn" class="btn-spec">
+                  <span class="spinner" id="deanon-spinner"></span>
+                  <span>EXEC_DEANONYMIZE // 원문 복원 실행</span>
+                </button>
+                <div class="form-group" style="margin-top: 0.5rem;">
+                  <label class="form-label">RESTORED_TEXT // ORIGINAL:</label>
+                  <div id="deanon-output-text" class="result-box" style="min-height: 70px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: Presidio Image Redactor -->
+    <section id="tab-image" class="tab-panel">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">OPTICAL_INGESTION // IMAGE & DICOM</h2>
+            <span class="badge badge-spec">OCR + BBOX</span>
+          </div>
+          <div class="card-body">
+            <div class="sample-bar">
+              <span class="form-label" style="margin-right: 0.25rem;">LOAD_SYNTHETIC:</span>
+              <button class="sample-btn" id="load-sample-image-btn">합성 한국 신분증 로드</button>
+              <button class="sample-btn" id="load-sample-dicom-btn">합성 의료용 DICOM (.dcm) 로드</button>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">FILE_INPUT // SELECT_MEDIA:</label>
+              <input type="file" id="image-file-input" class="input-field" accept="image/*,.dcm">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">REDACTION_MODE // STYLISTIC:</label>
+              <div style="display: flex; gap: 1.5rem; align-items: center;">
+                <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-family: var(--font-mono); font-size: 11px;">
+                  <input type="radio" name="redaction_style" value="blackout" checked>
+                  <span>BLACKOUT // 검은 박스 솔리드 마스킹</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-family: var(--font-mono); font-size: 11px;">
+                  <input type="radio" name="redaction_style" value="blur">
+                  <span>BLUR // 가우시안 흐림 마스킹</span>
+                </label>
+              </div>
+            </div>
+
+            <button id="image-redact-submit-btn" class="btn-primary">
+              <span class="spinner" id="image-spinner"></span>
+              <span>EXEC_REDACT_IMAGE // 시각적 마스킹 실행</span>
+            </button>
+
+            <!-- DICOM Metadata Info Card -->
+            <div id="dicom-meta-card" class="card" style="background-color: var(--surface-subtle); border: 1px solid var(--border-strong); display: none;">
+              <div class="card-header">
+                <h3 class="card-title">DICOM_HEADER_SANITIZATION // TAGS</h3>
+              </div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label class="form-label">SANITIZED_TAG_INDEX:</label>
+                  <div id="dicom-tags-list" style="display: flex; flex-wrap: wrap; gap: 0.35rem;"></div>
+                </div>
+                <button id="dicom-download-btn" class="btn-outline" style="align-self: flex-start;">
+                  <span>DOWNLOAD_REDACTED_DCM // 파일 저장</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">VISUAL_DIAGNOSTICS // BEFORE_AFTER</h2>
+            <span class="badge">PLANE_COMPARE</span>
+          </div>
+          <div class="card-body">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="image-preview-wrapper">
+                <span class="form-label">SOURCE_SLICE // RAW</span>
+                <div class="image-canvas-container">
+                  <img id="orig-image-preview" src="" alt="ORIGINAL IMAGE STREAM">
+                </div>
+              </div>
+              <div class="image-preview-wrapper">
+                <span class="form-label">TARGET_SLICE // REDACTED</span>
+                <div class="image-canvas-container">
+                  <img id="redacted-image-preview" src="" alt="REDACTED IMAGE STREAM">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">BOUNDING_BOX_COORDINATES // JSON:</label>
+              <pre id="image-bboxes-viewer" class="json-viewer">// 바운딩 박스 좌표 출력 영역</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: Presidio Structured -->
+    <section id="tab-structured" class="tab-panel">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">TABULAR_PIPELINE // COLUMN_LEVEL_PII_ANALYSIS</h2>
+          <span class="badge badge-spec">CSV / DATAFRAME / RDBMS</span>
+        </div>
+        <div class="card-body">
+          <div class="sample-bar">
+            <span class="form-label" style="margin-right: 0.25rem;">LOAD_DATA:</span>
+            <button class="sample-btn" id="struct-load-sample-btn">고객 정보 테이블 샘플 로드</button>
+            <div style="margin-left: auto; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button id="struct-analyze-btn" class="btn-primary" style="padding: 0.4rem 0.85rem; font-size: 11px;">
+                <span>1. ANALYZE_COLUMNS // 컬럼 분석</span>
+              </button>
+              <button id="struct-anonymize-btn" class="btn-spec" style="padding: 0.4rem 0.85rem; font-size: 11px;">
+                <span>2. EXEC_ANONYMIZE // 테이블 비식별화</span>
+              </button>
+              <button id="struct-deanon-btn" class="btn-outline" style="padding: 0.4rem 0.85rem; font-size: 11px;">
+                <span>3. DEANONYMIZE // 암호화 컬럼 복원</span>
+              </button>
+              <button id="struct-download-csv-btn" class="btn-outline" style="display: none; padding: 0.4rem 0.85rem; font-size: 11px;">
+                <span>DOWNLOAD_CSV</span>
+              </button>
+              <span class="spinner" id="struct-spinner" style="margin-top: 0.4rem;"></span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">COLUMN_RULES_MATRIX // CONFIG:</label>
+            <div id="struct-col-rules" style="display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.75rem; background-color: var(--surface-canvas); border: 1px solid var(--border-subtle);">
+              <span style="color: var(--text-muted);">대기 중: 먼저 [고객 정보 테이블 샘플 로드] 및 [1. ANALYZE_COLUMNS] 버튼을 실행하세요.</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">DATA_TABLE_VIEWPORT:</label>
+            <div class="data-table-container">
+              <table class="data-table">
+                <thead id="struct-table-head">
+                  <tr><th>고객ID</th><th>고객명</th><th>주민등록번호</th><th>연락처</th><th>이메일</th><th>거주도시</th><th>신용등급</th></tr>
+                </thead>
+                <tbody id="struct-table-body">
+                  <tr><td colspan="7" style="text-align: center; color: var(--text-muted);">데이터가 로드되지 않았습니다.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: Test Data Hub -->
+    <section id="tab-testdata" class="tab-panel">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">TEST_DATA_HUB // REPRODUCIBILITY_MATRIX</h2>
+          <span class="badge badge-spec">STATIC_REPOSITORIES</span>
+        </div>
+        <div class="card-body">
+          <p style="color: var(--text-secondary); font-size: 13px;">
+            Presidio 한국어 기능의 정밀도와 복원성을 독립적으로 검증할 수 있는 공인 규격 합성 테스트 데이터를 직접 호출 및 다운로드할 수 있습니다.
+          </p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 0.5rem;">
+            <!-- Hub Item 1 -->
+            <div class="card" style="background-color: var(--surface-canvas);">
+              <div class="card-header">
+                <h3 class="card-title">DATA_01 // UNSTRUCTURED_TEXT</h3>
+                <span class="badge">KO_TEXT</span>
+              </div>
+              <div class="card-body">
+                <p style="font-size: 12px; color: var(--text-secondary);">
+                  유효 체크섬 검증 한국 주민번호, 유무선 전화번호, 이메일, 주소가 포함된 3대 시나리오 JSON.
+                </p>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                  <a href="/api/test-data/text/customer_inquiry" target="_blank" class="btn-outline">고객상담 JSON</a>
+                  <a href="/api/test-data/text/hr_employee" target="_blank" class="btn-outline">인사급여 JSON</a>
+                  <a href="/api/test-data/text/medical_consult" target="_blank" class="btn-outline">병원진료 JSON</a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hub Item 2 -->
+            <div class="card" style="background-color: var(--surface-canvas);">
+              <div class="card-header">
+                <h3 class="card-title">DATA_02 // SYNTHETIC_ID_IMAGE</h3>
+                <span class="badge">PNG_IMAGE</span>
+              </div>
+              <div class="card-body">
+                <p style="font-size: 12px; color: var(--text-secondary);">
+                  OCR 검증용 합성 한국 신분증/확인서 이미지 (성명, 주민번호, 휴대폰, 주소 인쇄).
+                </p>
+                <div style="display: flex; gap: 0.5rem;">
+                  <a href="/api/test-data/image-file" target="_blank" class="btn-outline">DOWNLOAD_PNG</a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hub Item 3 -->
+            <div class="card" style="background-color: var(--surface-canvas);">
+              <div class="card-header">
+                <h3 class="card-title">DATA_03 // MEDICAL_DICOM</h3>
+                <span class="badge">DICOM_SCAN</span>
+              </div>
+              <div class="card-body">
+                <p style="font-size: 12px; color: var(--text-secondary);">
+                  의료 영상 규격(Secondary Capture)의 실제 합성 `.dcm` 파일. 픽셀 데이터 내 환자명/ID 인쇄 및 메타데이터 태그 포함.
+                </p>
+                <div style="display: flex; gap: 0.5rem;">
+                  <a href="/api/test-data/dicom" target="_blank" class="btn-outline">DOWNLOAD_DCM</a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hub Item 4 -->
+            <div class="card" style="background-color: var(--surface-canvas);">
+              <div class="card-header">
+                <h3 class="card-title">DATA_04 // STRUCTURED_CUSTOMER_TABLE</h3>
+                <span class="badge">CSV_JSON</span>
+              </div>
+              <div class="card-body">
+                <p style="font-size: 12px; color: var(--text-secondary);">
+                  고객ID, 고객명, 주민등록번호, 연락처, 이메일, 거주도시 컬럼으로 구성된 정형 데이터셋.
+                </p>
+                <div style="display: flex; gap: 0.5rem;">
+                  <a href="/api/test-data/structured" target="_blank" class="btn-outline">VIEW_RECORDS_JSON</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+services:
+  presidio-pii:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: presidio_pii_app
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./temp_redacted:/app/temp_redacted
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
