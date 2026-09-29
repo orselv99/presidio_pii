@@ -270,6 +270,8 @@ function getOperatorConfig(type, aesKey, defaults) {
 function initImageRedactor() {
   const fileInput = document.getElementById("image-file-input");
   const loadSampleImgBtn = document.getElementById("load-sample-image-btn");
+  const loadSamplePassportBtn = document.getElementById("load-sample-passport-btn");
+  const loadSampleDriverIdBtn = document.getElementById("load-sample-driverid-btn");
   const loadSampleDcmBtn = document.getElementById("load-sample-dicom-btn");
   const redactBtn = document.getElementById("image-redact-submit-btn");
   const spinner = document.getElementById("image-spinner");
@@ -309,7 +311,7 @@ function initImageRedactor() {
     }
   });
 
-  // 샘플 이미지 로드
+  // 합성 한국 신분증 샘플 로드
   loadSampleImgBtn.addEventListener("click", async () => {
     try {
       const res = await fetch("/api/test-data/image");
@@ -323,6 +325,40 @@ function initImageRedactor() {
       alert("샘플 이미지 로드 실패: " + e.message);
     }
   });
+
+  // 외국인 여권 샘플 로드
+  if (loadSamplePassportBtn) {
+    loadSamplePassportBtn.addEventListener("click", async () => {
+      try {
+        const res = await fetch("/api/test-data/image/passport");
+        const data = await res.json();
+        currentImageDataUri = data.image_base64;
+        currentDicomFile = null;
+        origPreview.src = currentImageDataUri;
+        redactedPreview.src = "";
+        dicomMetaCard.style.display = "none";
+      } catch (e) {
+        alert("외국인 여권 샘플 로드 실패: " + e.message);
+      }
+    });
+  }
+
+  // 한국 운전면허증 샘플 로드
+  if (loadSampleDriverIdBtn) {
+    loadSampleDriverIdBtn.addEventListener("click", async () => {
+      try {
+        const res = await fetch("/api/test-data/image/driverid");
+        const data = await res.json();
+        currentImageDataUri = data.image_base64;
+        currentDicomFile = null;
+        origPreview.src = currentImageDataUri;
+        redactedPreview.src = "";
+        dicomMetaCard.style.display = "none";
+      } catch (e) {
+        alert("한국 운전면허증 샘플 로드 실패: " + e.message);
+      }
+    });
+  }
 
   // 샘플 DICOM 파일 로드
   loadSampleDcmBtn.addEventListener("click", async () => {

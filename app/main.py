@@ -420,6 +420,34 @@ async def get_test_image_base64():
     }
 
 
+@app.get("/api/test-data/image/passport", tags=["5. Test Data Hub"])
+async def get_test_passport_base64():
+    """외국인 여권 샘플 이미지 (sample_foreigner_passport.jpg) Base64 반환"""
+    service = TestDataService.get_instance()
+    b64 = service.get_sample_passport_base64()
+    if not b64:
+        raise HTTPException(status_code=404, detail="외국인 여권 샘플 이미지를 찾을 수 없습니다.")
+    return {
+        "title": "외국인 여권 샘플 이미지",
+        "description": "Sarah Martin, 여권번호(ZE000509), MRZ 2개 라인, 생년월일, 발급국(CANADA) 포함",
+        "image_base64": b64,
+    }
+
+
+@app.get("/api/test-data/image/driverid", tags=["5. Test Data Hub"])
+async def get_test_driverid_base64():
+    """한국 모바일 운전면허증 샘플 이미지 (sample_korean_driverid.png) Base64 반환"""
+    service = TestDataService.get_instance()
+    b64 = service.get_sample_driverid_base64()
+    if not b64:
+        raise HTTPException(status_code=404, detail="한국 운전면허증 샘플 이미지를 찾을 수 없습니다.")
+    return {
+        "title": "한국 모바일 운전면허증 샘플 이미지",
+        "description": "홍길순, 운전면허번호(21-19-174133-01), 주민등록번호(920328 - 2134567), 주소 포함",
+        "image_base64": b64,
+    }
+
+
 @app.get("/api/test-data/image-file", tags=["5. Test Data Hub"])
 async def download_test_image_file():
     """합성 테스트 이미지 PNG 파일 직접 다운로드"""

@@ -241,5 +241,24 @@ class TestDataService:
     def get_sample_dicom_path(self) -> str:
         return self._ensure_sample_dicom()
 
+    def get_sample_passport_base64(self) -> Optional[str]:
+        """외국인 여권 샘플 이미지(sample_foreigner_passport.jpg)의 Data URI 반환"""
+        p_path = os.path.join(ASSETS_DIR, "sample_foreigner_passport.jpg")
+        if os.path.exists(p_path):
+            with open(p_path, "rb") as f:
+                b64 = base64.b64encode(f.read()).decode("utf-8")
+            return f"data:image/jpeg;base64,{b64}"
+        return None
+
+    def get_sample_driverid_base64(self) -> Optional[str]:
+        """한국 운전면허증 샘플 이미지(sample_korean_driverid.png)의 Data URI 반환"""
+        d_path = os.path.join(ASSETS_DIR, "sample_korean_driverid.png")
+        if os.path.exists(d_path):
+            with open(d_path, "rb") as f:
+                b64 = base64.b64encode(f.read()).decode("utf-8")
+            return f"data:image/png;base64,{b64}"
+        return None
+
     def get_sample_image_path(self) -> str:
         return self._ensure_sample_image()
+

@@ -49,9 +49,6 @@
       <button class="tab-btn" data-tab="tab-structured">
         <span>[04]</span> STRUCTURED TABULAR
       </button>
-      <button class="tab-btn" data-tab="tab-testdata">
-        <span>[05]</span> TEST DATA HUB
-      </button>
     </nav>
   </div>
 
@@ -261,8 +258,10 @@
           <div class="card-body">
             <div class="sample-bar">
               <span class="form-label" style="margin-right: 0.25rem;">LOAD_SYNTHETIC:</span>
-              <button class="sample-btn" id="load-sample-image-btn">합성 한국 신분증 로드</button>
-              <button class="sample-btn" id="load-sample-dicom-btn">합성 의료용 DICOM (.dcm) 로드</button>
+              <button class="sample-btn" id="load-sample-image-btn">합성 한국 신분증</button>
+              <button class="sample-btn" id="load-sample-passport-btn">외국인 여권 샘플</button>
+              <button class="sample-btn" id="load-sample-driverid-btn">한국 운전면허증 샘플</button>
+              <button class="sample-btn" id="load-sample-dicom-btn">의료용 DICOM (.dcm)</button>
             </div>
 
             <div class="form-group">
@@ -388,90 +387,6 @@
         </div>
       </div>
     </section>
-
-    <!-- TAB 5: Test Data Hub -->
-    <section id="tab-testdata" class="tab-panel">
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">TEST_DATA_HUB // REPRODUCIBILITY_MATRIX</h2>
-          <span class="badge badge-spec">STATIC_REPOSITORIES</span>
-        </div>
-        <div class="card-body">
-          <p style="color: var(--text-secondary); font-size: 13px;">
-            Presidio 한국어 기능의 정밀도와 복원성을 독립적으로 검증할 수 있는 공인 규격 합성 테스트 데이터를 직접 호출 및 다운로드할 수 있습니다.
-          </p>
-
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 0.5rem;">
-            <!-- Hub Item 1 -->
-            <div class="card" style="background-color: var(--surface-canvas);">
-              <div class="card-header">
-                <h3 class="card-title">DATA_01 // UNSTRUCTURED_TEXT</h3>
-                <span class="badge">KO_TEXT</span>
-              </div>
-              <div class="card-body">
-                <p style="font-size: 12px; color: var(--text-secondary);">
-                  유효 체크섬 검증 한국 주민번호, 유무선 전화번호, 이메일, 주소가 포함된 3대 시나리오 JSON.
-                </p>
-                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                  <a href="/api/test-data/text/customer_inquiry" target="_blank" class="btn-outline">고객상담 JSON</a>
-                  <a href="/api/test-data/text/hr_employee" target="_blank" class="btn-outline">인사급여 JSON</a>
-                  <a href="/api/test-data/text/medical_consult" target="_blank" class="btn-outline">병원진료 JSON</a>
-                </div>
-              </div>
-            </div>
-
-            <!-- Hub Item 2 -->
-            <div class="card" style="background-color: var(--surface-canvas);">
-              <div class="card-header">
-                <h3 class="card-title">DATA_02 // SYNTHETIC_ID_IMAGE</h3>
-                <span class="badge">PNG_IMAGE</span>
-              </div>
-              <div class="card-body">
-                <p style="font-size: 12px; color: var(--text-secondary);">
-                  OCR 검증용 합성 한국 신분증/확인서 이미지 (성명, 주민번호, 휴대폰, 주소 인쇄).
-                </p>
-                <div style="display: flex; gap: 0.5rem;">
-                  <a href="/api/test-data/image-file" target="_blank" class="btn-outline">DOWNLOAD_PNG</a>
-                </div>
-              </div>
-            </div>
-
-            <!-- Hub Item 3 -->
-            <div class="card" style="background-color: var(--surface-canvas);">
-              <div class="card-header">
-                <h3 class="card-title">DATA_03 // MEDICAL_DICOM</h3>
-                <span class="badge">DICOM_SCAN</span>
-              </div>
-              <div class="card-body">
-                <p style="font-size: 12px; color: var(--text-secondary);">
-                  의료 영상 규격(Secondary Capture)의 실제 합성 `.dcm` 파일. 픽셀 데이터 내 환자명/ID 인쇄 및 메타데이터 태그 포함.
-                </p>
-                <div style="display: flex; gap: 0.5rem;">
-                  <a href="/api/test-data/dicom" target="_blank" class="btn-outline">DOWNLOAD_DCM</a>
-                </div>
-              </div>
-            </div>
-
-            <!-- Hub Item 4 -->
-            <div class="card" style="background-color: var(--surface-canvas);">
-              <div class="card-header">
-                <h3 class="card-title">DATA_04 // STRUCTURED_CUSTOMER_TABLE</h3>
-                <span class="badge">CSV_JSON</span>
-              </div>
-              <div class="card-body">
-                <p style="font-size: 12px; color: var(--text-secondary);">
-                  고객ID, 고객명, 주민등록번호, 연락처, 이메일, 거주도시 컬럼으로 구성된 정형 데이터셋.
-                </p>
-                <div style="display: flex; gap: 0.5rem;">
-                  <a href="/api/test-data/structured" target="_blank" class="btn-outline">VIEW_RECORDS_JSON</a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
   </main>
 
   <script src="/static/js/app.js"></script>
