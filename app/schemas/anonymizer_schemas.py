@@ -19,7 +19,7 @@ class OperatorConfigModel(BaseModel):
 class AnonymizeRequest(BaseModel):
     text: str = Field(..., description="비식별화할 원문 텍스트", example="홍길동 고객님의 주민번호는 900101-1234568 이며 연락처는 010-1234-5678 입니다.")
     language: str = Field(default="ko", description="언어 코드 ('ko', 'en')", example="ko")
-    # Entity-specific operators or default operator
+    # 엔티티별 연산자 매핑 또는 기본 연산자
     operators: Optional[Dict[str, OperatorConfigModel]] = Field(
         default=None,
         description="엔티티별 연산자 설정 (예: {'KR_RRN': {'operator': 'encrypt', 'params': {'key': '1234567890123456'}}, 'KR_PHONE_NUMBER': {'operator': 'mask', 'params': {'chars_to_mask': 4, 'from_end': True}}})",
@@ -28,7 +28,7 @@ class AnonymizeRequest(BaseModel):
         default=OperatorConfigModel(operator="replace", params={"new_value": "<PII_REDACTED>"}),
         description="개별 설정이 없는 엔티티에 적용될 기본 연산자"
     )
-    # Direct analyzer configuration if text is not pre-analyzed
+    # 텍스트 사전 분석이 없는 경우 직접 분석기 설정
     entities: Optional[List[str]] = Field(default=None, description="탐지할 PII 엔티티 목록 (None시 전체)")
     score_threshold: Optional[float] = Field(default=0.4, description="신뢰도 임계값")
 

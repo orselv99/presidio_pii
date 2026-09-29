@@ -19,8 +19,8 @@ class AnalyzerService:
     _instance: Optional["AnalyzerService"] = None
 
     def __init__(self):
-        logger.info("Initializing Presidio AnalyzerEngine with bilingual (ko, en) Spacy models & Korean NER mapping...")
-        # Configure Spacy NLP engine with English and Korean models and mapping for Korean NER tags (PS->PERSON, LC->LOCATION, OG->ORGANIZATION)
+        logger.info("한국어 및 영어 이중 언어 spaCy 모델과 한국어 개체명 태그 매핑을 적용하여 Presidio AnalyzerEngine 초기화 중...")
+        # 한국어 spaCy 모델의 NER 태그(PS->PERSON, OG->ORGANIZATION, LC->LOCATION, DT->DATE_TIME)를 Presidio 표준 엔티티로 매핑
         nlp_configuration = {
             "nlp_engine_name": "spacy",
             "models": [
@@ -50,8 +50,8 @@ class AnalyzerService:
             supported_languages=["ko", "en"],
         )
 
-        # 1. Presidio 공식 내장 한국어 사전정의 인식기 (ko 및 en 모두 등록)
-        # 한국 주민번호, 사업자번호, 운전면허, 외국인등록번호, 여권번호
+        # 1. Presidio 공식 내장 한국어 사전정의 인식기 등록 (ko 및 en 지원)
+        # 주민등록번호, 사업자등록번호, 운전면허번호, 외국인등록번호, 여권번호
         for lang in ["ko", "en"]:
             self.engine.registry.add_recognizer(KrRrnRecognizer(supported_language=lang))
             self.engine.registry.add_recognizer(KrBrnRecognizer(supported_language=lang))
@@ -59,14 +59,14 @@ class AnalyzerService:
             self.engine.registry.add_recognizer(KrFrnRecognizer(supported_language=lang))
             self.engine.registry.add_recognizer(KrPassportRecognizer(supported_language=lang))
 
-        # 2. 한국 전화번호 맞춤 인식기 (ko 및 en 모두 등록)
+        # 2. 한국 전화번호 맞춤 인식기 등록 (ko 및 en 지원)
         # 휴대전화(010), 서울(02), 지역번호(031~064), 전국대표번호(1588/1577 등), 070 지원
         self.engine.registry.add_recognizer(KrPhoneNumberRecognizer(supported_language="ko"))
         self.engine.registry.add_recognizer(KrPhoneNumberRecognizer(supported_language="en"))
 
         logger.info(
-            "Presidio AnalyzerEngine initialized with official Korean recognizers "
-            "(KR_RRN, KR_BRN, KR_DRIVER_LICENSE, KR_FRN, KR_PASSPORT) and KR_PHONE_NUMBER (ko & en)."
+            "공식 한국어 사전정의 인식기(KR_RRN, KR_BRN, KR_DRIVER_LICENSE, KR_FRN, KR_PASSPORT) 및 "
+            "KR_PHONE_NUMBER 등록 완료."
         )
 
     @classmethod
@@ -84,7 +84,7 @@ class AnalyzerService:
         return_decision_process: bool = False,
     ) -> List[RecognizerResult]:
         """
-        Executes PII analysis on text.
+        입력 텍스트에 대해 개인정보(PII) 탐지를 실행합니다.
         """
         if language not in ("ko", "en"):
             language = "ko"
@@ -105,6 +105,9 @@ class AnalyzerService:
         entities: Optional[List[str]] = None,
         score_threshold: Optional[float] = 0.4,
     ) -> AnalyzeResponse:
+        """
+        텍스트 내 PII를 분석하고 응답 스키마(AnalyzeResponse) 형태로 변환하여 반환합니다.
+        """
         results = self.analyze(
             text=text,
             language=language,

@@ -127,7 +127,7 @@ class TestDataService:
         }
 
     def _get_fonts(self):
-        """Loads clean system fonts for crisp OCR recognition."""
+        """정확한 OCR 텍스트 인식을 위한 시스템 폰트 로드"""
         font_bold = None
         font_reg = None
         for name in ["malgunbd.ttf", "arialbd.ttf", "DejaVuSans-Bold.ttf"]:
@@ -145,40 +145,40 @@ class TestDataService:
         return font_bold, font_reg
 
     def _ensure_sample_image(self) -> str:
-        """Creates a realistic synthetic document image with clean Korean/English PII text."""
+        """한글 및 영문 PII 텍스트가 포함된 현실적인 신분증 서식 이미지 생성"""
         img_path = os.path.join(ASSETS_DIR, "sample_korean_id.png")
         if not os.path.exists(img_path):
             font_bold, font_reg = self._get_fonts()
 
-            # Higher resolution and crisp white background for accurate OCR
+            # 고해상도 및 선명한 흰색 배경으로 정확한 OCR 지원
             img = Image.new("RGB", (820, 500), color=(255, 255, 255))
             draw = ImageDraw.Draw(img)
 
-            # Card Header
+            # 카드 상단 헤더
             draw.rectangle([0, 0, 820, 70], fill=(30, 58, 95))
             draw.text((30, 22), "REPUBLIC OF KOREA - VERIFICATION CERTIFICATE", fill=(255, 255, 255), font=font_bold)
 
-            # Photo placeholder
+            # 증명사진 영역
             draw.rectangle([40, 110, 180, 310], fill=(240, 243, 246), outline=(160, 174, 192), width=2)
             draw.text((75, 195), "[ PHOTO ]", fill=(100, 116, 139), font=font_bold)
 
-            # Details with crisp margins and clear text
+            # 세부 인적사항 텍스트
             draw.text((220, 115), "성명 (Name): 홍길동", fill=(0, 0, 0), font=font_bold)
             draw.text((220, 165), "주민등록번호 (RRN): 900101-1234568", fill=(0, 0, 0), font=font_bold)
             draw.text((220, 215), "연락처 (Phone): 010-1234-5678", fill=(0, 0, 0), font=font_bold)
             draw.text((220, 265), "이메일 (Email): hong.gildong@privacy.kr", fill=(0, 0, 0), font=font_bold)
             draw.text((220, 315), "주소 (Address): 서울특별시 강남구 테헤란로 123", fill=(0, 0, 0), font=font_bold)
 
-            # Footer / Security border
+            # 하단 보안선 및 안내 문구
             draw.line([30, 420, 790, 420], fill=(203, 213, 225), width=2)
             draw.text((40, 445), "ISSUED BY PRIVACY SECURITY CENTER  *  CONFIDENTIAL", fill=(100, 116, 139), font=font_reg)
 
             img.save(img_path, format="PNG")
-            logger.info(f"Synthetic test image created at {img_path}")
+            logger.info(f"합성 테스트 이미지 생성 완료: {img_path}")
         return img_path
 
     def _ensure_sample_dicom(self) -> str:
-        """Creates a realistic valid DICOM file with patient metadata and burned-in scan text."""
+        """환자 메타데이터와 번인(Burned-in) 스캔 텍스트가 포함된 유효한 의료용 DICOM 파일 생성"""
         dcm_path = os.path.join(ASSETS_DIR, "sample_medical_scan.dcm")
         if not os.path.exists(dcm_path):
             font_bold, font_reg = self._get_fonts()
@@ -190,7 +190,7 @@ class TestDataService:
 
             ds = FileDataset(dcm_path, {}, file_meta=file_meta, preamble=b"\0" * 128)
             ds.PatientName = "HONG^GILDONG"
-            ds.PatientID = "PAT-900101-12345"
+            ds.PatientID = "P-900101-12345"
             ds.PatientBirthDate = "19900101"
             ds.PatientSex = "M"
             ds.PatientAge = "036Y"
@@ -207,24 +207,24 @@ class TestDataService:
             ds.PhotometricInterpretation = "MONOCHROME2"
             ds.PixelRepresentation = 0
 
-            # Pixel slice with burned-in annotations
+            # 번인(Burned-in) 텍스트 주석이 포함된 픽셀 슬라이스 생성
             img = Image.new("L", (400, 400), color=20)
             draw = ImageDraw.Draw(img)
 
-            # Burned-in text with clear font
+            # 선명한 폰트로 인쇄된 환자 개인정보 텍스트
             draw.text((20, 20), "PATIENT: HONG GILDONG", fill=255, font=font_bold)
             draw.text((20, 50), "RRN: 900101-1234568", fill=255, font=font_bold)
             draw.text((20, 80), "TEL: 010-1234-5678", fill=255, font=font_bold)
             draw.text((20, 110), "DATE: 2026-09-29  MOD: CT", fill=255, font=font_reg)
 
-            # Simulated medical scan anatomy
+            # 모의 의료 영상 해부학적 구조선
             draw.ellipse([100, 150, 300, 350], outline=170, width=4)
             draw.ellipse([140, 190, 260, 310], outline=120, width=2)
             draw.point([(200, 250)], fill=240)
 
             ds.PixelData = img.tobytes()
             ds.save_as(dcm_path)
-            logger.info(f"Synthetic test DICOM created at {dcm_path}")
+            logger.info(f"합성 테스트 DICOM 파일 생성 완료: {dcm_path}")
         return dcm_path
 
     def get_sample_image_base64(self) -> str:

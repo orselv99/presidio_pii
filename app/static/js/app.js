@@ -1,4 +1,3 @@
-// Microsoft Presidio Web UI Client Application
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
   initTabs();
@@ -9,7 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initTestDataHub();
 });
 
-// --- Swiss Technical Theme Switching ---
 function initTheme() {
   const toggleBtn = document.getElementById("theme-toggle-btn");
   const themeLabel = document.getElementById("theme-label");
@@ -29,7 +27,7 @@ function initTheme() {
 }
 
 
-// --- Tab Switching ---
+// 탭 전환 제어
 function initTabs() {
   const tabs = document.querySelectorAll(".tab-btn");
   const panels = document.querySelectorAll(".tab-panel");
@@ -46,7 +44,7 @@ function initTabs() {
   });
 }
 
-// --- 1. Presidio Analyzer ---
+// 1. Presidio Analyzer (개인정보 탐지)
 function initAnalyzer() {
   const input = document.getElementById("analyzer-input");
   const btn = document.getElementById("analyzer-submit-btn");
@@ -55,7 +53,7 @@ function initAnalyzer() {
   const jsonViewer = document.getElementById("analyzer-json-viewer");
   const entityCount = document.getElementById("analyzer-entity-count");
 
-  // Load sample texts
+  // 샘플 텍스트 로드
   document.querySelectorAll(".analyzer-sample-btn").forEach(btn => {
     btn.addEventListener("click", async () => {
       const scenario = btn.getAttribute("data-scenario");
@@ -64,7 +62,7 @@ function initAnalyzer() {
         const data = await res.json();
         input.value = data.text;
       } catch (e) {
-        console.error("Failed to load sample text", e);
+        console.error("샘플 텍스트 로드 실패", e);
       }
     });
   });
@@ -94,7 +92,7 @@ function initAnalyzer() {
       entityCount.textContent = `${data.total_entities}개 탐지됨`;
       jsonViewer.textContent = JSON.stringify(data.entities, null, 2);
 
-      // Render highlighted text
+      // 하이라이트 텍스트 렌더링
       let highlighted = "";
       let lastIdx = 0;
       const sortedEntities = [...data.entities].sort((a, b) => a.start - b.start);
@@ -118,7 +116,7 @@ function initAnalyzer() {
   });
 }
 
-// --- 2. Presidio Anonymizer & Deanonymizer ---
+// 2. Presidio Anonymizer & Deanonymizer (비식별화 및 복원)
 let currentDeanonymizePayload = null;
 
 function initAnonymizer() {
@@ -134,7 +132,7 @@ function initAnonymizer() {
   const deanonKeyInput = document.getElementById("deanon-key-input");
   const deanonCard = document.getElementById("deanon-card");
 
-  // Sample load
+  // 샘플 데이터 로드
   document.querySelectorAll(".anon-sample-btn").forEach(btn => {
     btn.addEventListener("click", async () => {
       const scenario = btn.getAttribute("data-scenario");
@@ -187,7 +185,7 @@ function initAnonymizer() {
       anonOutput.textContent = data.anonymized_text;
       currentDeanonymizePayload = data.deanonymize_payload;
 
-      // Populate Items Table
+      // 엔티티 변환 목록 테이블 렌더링
       anonItemsTbody.innerHTML = "";
       data.items.forEach(it => {
         const tr = document.createElement("tr");
@@ -200,7 +198,7 @@ function initAnonymizer() {
         anonItemsTbody.appendChild(tr);
       });
 
-      // Show Deanonymize Section if reversible
+      // 복원 가능한 암호화 연산자가 포함된 경우 복원 카드 표시
       if (data.is_reversible && data.deanonymize_payload) {
         deanonCard.style.display = "flex";
         deanonKeyInput.value = data.deanonymize_payload.encryption_key_used || aesKey;
@@ -268,7 +266,7 @@ function getOperatorConfig(type, aesKey, defaults) {
   }
 }
 
-// --- 3. Presidio Image Redactor ---
+// 3. Presidio Image Redactor (이미지 및 DICOM 가림 처리)
 function initImageRedactor() {
   const fileInput = document.getElementById("image-file-input");
   const loadSampleImgBtn = document.getElementById("load-sample-image-btn");
@@ -286,7 +284,7 @@ function initImageRedactor() {
   let currentDicomFile = null;
   let currentDicomDownloadUrl = null;
 
-  // File upload handler
+  // 파일 업로드 핸들러
   fileInput.addEventListener("change", (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -311,7 +309,7 @@ function initImageRedactor() {
     }
   });
 
-  // Load sample image
+  // 샘플 이미지 로드
   loadSampleImgBtn.addEventListener("click", async () => {
     try {
       const res = await fetch("/api/test-data/image");
@@ -326,7 +324,7 @@ function initImageRedactor() {
     }
   });
 
-  // Load sample DICOM
+  // 샘플 DICOM 파일 로드
   loadSampleDcmBtn.addEventListener("click", async () => {
     try {
       const res = await fetch("/api/test-data/dicom");
@@ -343,7 +341,7 @@ function initImageRedactor() {
     }
   });
 
-  // Execute Redaction
+  // 가림 처리 실행
   redactBtn.addEventListener("click", async () => {
     if (!currentImageDataUri && !currentDicomFile) {
       alert("먼저 이미지를 업로드하거나 샘플을 로드해주세요.");
@@ -356,12 +354,13 @@ function initImageRedactor() {
 
     try {
       if (currentDicomFile) {
-        // Redact DICOM
+        // 의료용 DICOM 파일 가림 처리
         const formData = new FormData();
         formData.append("file", currentDicomFile);
         formData.append("redaction_type", redactionType);
         formData.append("blur_radius", "15");
         formData.append("redact_metadata", "true");
+        formData.append("fill", "background");
 
         const res = await fetch("/api/image/redact-dicom", {
           method: "POST",
@@ -373,12 +372,12 @@ function initImageRedactor() {
         redactedPreview.src = data.preview_redacted_base64;
         bboxesViewer.textContent = JSON.stringify(data.pixel_bboxes, null, 2);
 
-        // Show DICOM metadata info
+        // DICOM 비식별화 메타데이터 태그 정보 표시
         dicomMetaCard.style.display = "flex";
         dicomTagsList.innerHTML = data.redacted_tags.map(t => `<span class="badge badge-emerald">${t}</span>`).join(" ");
         currentDicomDownloadUrl = data.download_url;
       } else {
-        // Redact standard image
+        // 일반 신분증/서식 이미지 가림 처리
         const res = await fetch("/api/image/redact", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -411,7 +410,7 @@ function initImageRedactor() {
   });
 }
 
-// --- 4. Presidio Structured ---
+// 4. Presidio Structured (정형 데이터 처리)
 let currentTableRecords = [];
 let currentAnonymizedRecords = [];
 
@@ -439,7 +438,7 @@ function initStructured() {
     }
   });
 
-  // Step 1: Analyze Columns
+  // 1단계: 컬럼 분석
   analyzeBtn.addEventListener("click", async () => {
     if (!currentTableRecords.length) {
       alert("먼저 샘플 데이터를 로드하거나 테이블 데이터를 준비해주세요.");
@@ -461,7 +460,7 @@ function initStructured() {
       });
       const data = await res.json();
 
-      // Render column rule configurations
+      // 컬럼별 비식별화 규칙 셀렉트박스 렌더링
       colRulesContainer.innerHTML = "";
       data.columns.forEach(col => {
         const div = document.createElement("div");
@@ -498,7 +497,7 @@ function initStructured() {
     }
   });
 
-  // Step 2: Anonymize Table
+  // 2단계: 테이블 비식별화
   anonymizeBtn.addEventListener("click", async () => {
     if (!currentTableRecords.length) {
       alert("데이터가 없습니다.");
@@ -552,7 +551,7 @@ function initStructured() {
     }
   });
 
-  // Step 3: Deanonymize Table
+  // 3단계: 테이블 복원(Deanonymize)
   deanonBtn.addEventListener("click", async () => {
     if (!currentAnonymizedRecords.length) {
       alert("먼저 테이블을 비식별화(암호화)해주세요.");
@@ -595,7 +594,7 @@ function initStructured() {
     }
   });
 
-  // Download CSV
+  // CSV 다운로드 처리
   downloadCsvBtn.addEventListener("click", () => {
     if (!currentAnonymizedRecords.length) return;
     const keys = Object.keys(currentAnonymizedRecords[0]);
@@ -622,12 +621,12 @@ function initStructured() {
   }
 }
 
-// --- 5. Test Data Hub ---
+// 5. Test Data Hub (테스트 데이터 허브)
 function initTestDataHub() {
-  // Hub buttons are directly wired with href links or API calls
+  // 허브 버튼은 HTML a 태그 href 링크 및 직통 API 호출로 연동됨
 }
 
-// Utility
+// 유틸리티 함수: HTML 특수문자 이스케이프
 function escapeHtml(str) {
   if (!str) return "";
   return str

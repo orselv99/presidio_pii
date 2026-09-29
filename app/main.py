@@ -40,16 +40,16 @@ os.makedirs(TEMP_CACHE_DIR, exist_ok=True)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Initializing Microsoft Presidio Enterprise API Services...")
-    # Preload and initialize services on startup
+    logger.info("Microsoft Presidio 엔터프라이즈 API 서비스를 초기화합니다...")
+    # 시작 시 서비스 사전 로드 및 초기화
     AnalyzerService.get_instance()
     AnonymizerService.get_instance()
     ImageRedactorService.get_instance()
     StructuredService.get_instance()
     TestDataService.get_instance()
-    logger.info("All Presidio Services successfully initialized and ready to serve!")
+    logger.info("모든 Presidio 서비스가 성공적으로 초기화되어 서비스 준비가 완료되었습니다.")
     yield
-    logger.info("Shutting down Presidio API Services...")
+    logger.info("Presidio API 서비스를 종료합니다...")
 
 app = FastAPI(
     title="Microsoft Presidio PII De-identification & Redaction Platform",
@@ -76,7 +76,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Static files mount
+# 정적 웹 리소스 마운트
 STATIC_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "static"))
 os.makedirs(STATIC_DIR, exist_ok=True)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -235,6 +235,7 @@ async def redact_dicom_file(
     redaction_type: str = Form("blackout", description="'blackout' 또는 'blur'"),
     blur_radius: int = Form(15, description="블러 반경"),
     redact_metadata: bool = Form(True, description="환자명 등 메타데이터 헤더 태그 가림 처리 여부"),
+    fill: str = Form("background", description="가림 색상 채우기 방식 ('background' 또는 'contrast')"),
 ):
     """
     의료용 DICOM 영상 데이터(.dcm)의 민감정보 가림 처리를 수행합니다.
@@ -251,6 +252,7 @@ async def redact_dicom_file(
                 redaction_type=redaction_type,
                 blur_radius=blur_radius,
                 redact_metadata=redact_metadata,
+                fill=fill,
             )
         )
 

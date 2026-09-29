@@ -30,7 +30,7 @@ class StructuredService:
     ):
         self.analyzer_service = analyzer_service or AnalyzerService.get_instance()
         self.anonymizer_service = anonymizer_service or AnonymizerService.get_instance()
-        logger.info("StructuredService initialized for tabular and CSV/RDBMS data.")
+        logger.info("StructuredService가 정형(CSV/RDBMS) 데이터 처리를 위해 초기화되었습니다.")
 
     @classmethod
     def get_instance(cls) -> "StructuredService":
@@ -45,7 +45,7 @@ class StructuredService:
         sample_size: int = 50,
     ) -> StructuredAnalyzeResponse:
         """
-        Analyzes columns of tabular records and determines PII types and confidence scores.
+        테이블 형태의 레코드 열(Column)을 표본 분석하여 PII 유형과 신뢰도 점수를 판정합니다.
         """
         if not data:
             return StructuredAnalyzeResponse(
@@ -60,12 +60,12 @@ class StructuredService:
         columns_result: List[ColumnAnalysisResult] = []
         recommended_ops: Dict[str, OperatorConfigModel] = {}
 
-        # Sample rows up to sample_size
+        # 지정된 sample_size 크기만큼 상위 행 추출
         sampled_df = df.head(sample_size)
 
         for col in df.columns:
             col_str = str(col)
-            # Collect non-null, stringified samples
+            # 결측값을 제외한 문자열 표본 수집
             col_samples = sampled_df[col].dropna().astype(str).tolist()
             if not col_samples:
                 columns_result.append(
@@ -80,24 +80,24 @@ class StructuredService:
 
             entity_scores: Dict[str, List[float]] = {}
 
-            # Analyze sample values
+            # 표본 데이터 값 분석 (최대 20개 샘플)
             for val in col_samples[:20]:
                 val = val.strip()
                 if not val:
                     continue
-                # Also include column name as context
+                # 열 이름을 문맥(Context)으로 함께 전달
                 results = self.analyzer_service.analyze(
                     text=f"{col_str}: {val}",
                     language=language,
                     score_threshold=0.3,
                 )
                 for r in results:
-                    # Filter out matches that match only the column name itself
+                    # 열 이름 자체에만 매칭된 결과는 필터링
                     if r.end > len(col_str) + 1:
                         entity_scores.setdefault(r.entity_type, []).append(r.score)
 
             if entity_scores:
-                # Find most frequent and highest scoring entity
+                # 빈도수 및 신뢰도 총합 기준 최적의 엔티티 결정
                 best_entity = max(entity_scores.keys(), key=lambda e: (len(entity_scores[e]), sum(entity_scores[e])))
                 avg_score = round(sum(entity_scores[best_entity]) / len(entity_scores[best_entity]), 4)
             else:
@@ -113,7 +113,7 @@ class StructuredService:
                 )
             )
 
-            # Recommend appropriate operator for detected entity
+            # 탐지된 PII 유형에 적합한 추천 연산자 매핑
             if best_entity:
                 if best_entity == "KR_RRN":
                     recommended_ops[col_str] = OperatorConfigModel(
@@ -156,7 +156,7 @@ class StructuredService:
         language: str = "ko",
     ) -> StructuredAnonymizeResponse:
         """
-        Anonymizes tabular data column by column using specified operators.
+        지정된 열별 연산자를 적용하여 정형 테이블 데이터를 비식별화합니다.
         """
         if not data:
             return StructuredAnonymizeResponse(
@@ -183,7 +183,7 @@ class StructuredService:
                     ColumnRestorationMetadata(column_name=col, operator="encrypt", key_used=key)
                 )
 
-            # Apply operator to each value in the column
+            # 열 내의 각 셀 값에 연산자 적용
             def apply_op(val):
                 if pd.isna(val) or val == "":
                     return val
@@ -215,7 +215,7 @@ class StructuredService:
                     else:
                         return hashlib.sha256(target).hexdigest()
                 elif op_type == "encrypt":
-                    # Use Presidio Anonymizer AES encryption engine
+                    # Presidio Anonymizer AES 대칭키 암호화 엔진 사용
                     key = params.get("key", "1234567890123456")
                     resp = self.anonymizer_service.anonymize(
                         text=val_str,
@@ -227,10 +227,10 @@ class StructuredService:
 
             df[col] = df[col].apply(apply_op)
 
-        # Convert back to list of dicts
+        # 딕셔너리 리스트로 변환
         anonymized_records = df.to_dict(orient="records")
 
-        # Convert to CSV string with UTF-8
+        # UTF-8 CSV 문자열로 변환
         csv_buffer = io.StringIO()
         df.to_csv(csv_buffer, index=False)
         csv_str = csv_buffer.getvalue()
@@ -249,7 +249,7 @@ class StructuredService:
         column_keys: Dict[str, str],
     ) -> StructuredDeanonymizeResponse:
         """
-        Deanonymizes encrypted columns back to original tabular data using column AES keys.
+        열별 AES 대칭키를 사용하여 암호화된 정형 데이터를 원래의 원문 데이터로 복원(Deanonymize)합니다.
         """
         if not anonymized_data:
             return StructuredDeanonymizeResponse(
@@ -270,7 +270,7 @@ class StructuredService:
                     return val
                 val_str = str(val).strip()
                 try:
-                    # Construct Presidio Deanonymize entity payload for the full cell
+                    # 셀 전체 값에 대한 Presidio Deanonymize 엔티티 페이로드 구성
                     from app.schemas.anonymizer_schemas import DeanonymizePayloadItem
                     payload_item = DeanonymizePayloadItem(
                         start=0,
@@ -286,7 +286,7 @@ class StructuredService:
                     )
                     return resp.restored_text
                 except Exception as e:
-                    logger.warning(f"Failed to decrypt cell value '{val_str}' in column '{col}': {e}")
+                    logger.warning(f"열 '{col}'의 셀 값 '{val_str}' 복호화 실패: {e}")
                     return val_str
 
             df[col] = df[col].apply(decrypt_val)

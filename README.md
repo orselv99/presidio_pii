@@ -20,10 +20,6 @@ d:\.repo\.private0\noname00\
 ├── app/
 │   ├── __init__.py
 │   ├── main.py                       # FastAPI 메인 애플리케이션 및 라우터 엔드포인트
-│   ├── recognizers/                  # 한국 맞춤형 커스텀 인식기 모듈
-│   │   ├── __init__.py
-│   │   ├── kr_phone_recognizer.py    # 한국 전화번호(010, 02, 지역번호, 1588 등) 인식기
-│   │   └── kr_rrn_recognizer.py      # 주민등록번호 인식기 (체크섬/생년월일 정밀 검증)
 │   ├── schemas/                      # Pydantic v2 요청/응답 데이터 모델
 │   │   ├── __init__.py
 │   │   ├── analyzer_schemas.py       # PII 탐지 요청/응답 스키마
@@ -35,6 +31,7 @@ d:\.repo\.private0\noname00\
 │   │   ├── analyzer_service.py       # Presidio Analyzer (공식 한국어 사전정의 인식기 + Spacy ko/en)
 │   │   ├── anonymizer_service.py     # 5대 연산자(삭제, 대체, 마스킹, 해싱, AES 암호화) & Deanonymizer
 │   │   ├── image_redactor_service.py # 이미지/DICOM OCR 추출 및 블랙아웃/블러 시각적 가림 처리
+│   │   ├── kr_phone_recognizer.py    # 한국 전화번호 맞춤 인식기 (010, 02, 지역번호, 1588 등)
 │   │   ├── structured_service.py     # CSV/DataFrame 정형 데이터 컬럼 분석 및 비식별화/복원
 │   │   └── test_data_service.py      # 안전한 합성 텍스트, 이미지, DICOM, CSV 테스트 데이터 생성기
 │   ├── static/                       # Swiss Technical 테마 웹 대시보드 정적 에셋
@@ -63,7 +60,7 @@ d:\.repo\.private0\noname00\
   - `KrDriverLicenseRecognizer`: 운전면허번호 (`KR_DRIVER_LICENSE`)
   - `KrFrnRecognizer`: 외국인등록번호 (`KR_FRN`)
   - `KrPassportRecognizer`: 여권번호 (`KR_PASSPORT`)
-- **한국 전화번호 인식기 (`KR_PHONE_NUMBER`) 탑재**:
+- **한국 전화번호 인식기 (`KR_PHONE_NUMBER`) 탑재 (`app/services/kr_phone_recognizer.py`)**:
   - 휴대전화(`010`, `011`, `016~019`).
   - 서울 유선(`02`) 및 전국 지역번호(`031~064`).
   - 대표번호/고객센터(`1588`, `1577`, `1544`, `1566`, `1600` 등).
@@ -88,6 +85,9 @@ d:\.repo\.private0\noname00\
   - **가우시안 흐림 (Blur)**: 개인정보 Bounding Box 좌표 영역에 부드러운 가우시안 블러 적용.
 - **의료용 DICOM (.dcm) 지원**:
   - 픽셀 데이터(Pixel Data) 내 인쇄(Burned-in)된 환자명, 환자ID, 생년월일 영역 검출 및 가림 처리.
+  - DICOM 메타데이터 기반 `phi_list` 추출 및 `ko`/`en` 양방향 거부 목록(Deny-List) 자동 등록.
+  - 의료 표준 라벨(`PATIENT:`, `RRN:`, `TEL:`, `DATE:`, `MOD: CT` 등)에 대한 허용 목록(Allow-List) 적용으로 라벨 오탐 방지 및 원문 보존.
+  - 배경색 동기화(`fill="background"`)로 스캔 픽셀과 이질감 없는 자연스러운 블랙아웃 마스킹 제공.
   - DICOM 헤더 메타데이터 태그(`PatientName`, `PatientID`, `PatientBirthDate` 등) 비식별화.
   - 처리 전/후 픽셀 슬라이스 미리보기 및 마스킹된 `.dcm` 바이너리 다운로드.
 
